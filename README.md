@@ -3,6 +3,7 @@
 A simple Streamlit app for an Operating Systems activity.
 
 ## Features
+- Animated interactive Deadlock Simulation in Replay Mode with step-by-step playback & recovery
 - Need matrix calculation (`Need = Max - Allocation`)
 - Banker’s Algorithm safety check and safe sequence
 - Resource request validation and safety check

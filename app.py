@@ -1,21 +1,12 @@
 import streamlit as st
 import pandas as pd
 from copy import deepcopy
+from styles import apply_custom_styles
+from visualizations import render_deadlock_replay_animation
 
 st.set_page_config(page_title="Deadlock & Banker’s Algorithm", page_icon="🔐", layout="wide")
 
-st.markdown("""
-<style>
-/* Make numeric cells and matrix values easier to read */
-[data-testid="stDataFrame"] [role="gridcell"] { font-size: 19px !important; }
-[data-testid="stDataFrame"] [role="columnheader"] { font-size: 16px !important; }
-[data-testid="stMetricValue"] { font-size: 30px !important; }
-.big-number { font-size: 24px; font-weight: 750; letter-spacing: .3px; }
-.sim-card { border: 1px solid rgba(128,128,128,.35); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
-.sim-title { font-size: 16px; font-weight: 700; }
-.sim-sub { font-size: 13px; opacity: .8; }
-</style>
-""", unsafe_allow_html=True)
+apply_custom_styles()
 
 st.title("🔐 Deadlock Analysis & Resource Allocation Dashboard")
 st.caption("Operating Systems Activity · Banker’s Algorithm · Deadlock Detection and Prevention")
@@ -139,7 +130,7 @@ need = need_matrix(maximum, allocation) if not err else []
 safe, sequence, safety_steps, unfinished = safety_algorithm(available, allocation, need) if not err else (False, [], [], [])
 
 if page == "Overview":
-    left, right = st.columns([1.7, 1], gap="large")
+    left, right = st.columns([1, 1.15], gap="large")
     with left:
         st.subheader("Welcome")
         st.write("Use this dashboard to explore how an operating system allocates resources, avoids unsafe allocations, detects deadlocks, and prevents deadlock conditions.")
@@ -159,24 +150,9 @@ if page == "Overview":
         st.markdown("### Key difference")
         st.write("Banker’s Algorithm checks whether granting a request preserves a safe state. It does not, by itself, detect an existing deadlock. An unsafe state is not automatically a deadlock.")
     with right:
-        st.subheader("▶ Live mini-simulation")
-        st.caption("A small animated-style walkthrough of two processes waiting on each other.")
-        sim_step = st.select_slider("Simulation step", options=[1, 2, 3], value=1,
-                                    format_func=lambda x: {1:"1 · Resources held", 2:"2 · Both request", 3:"3 · Deadlock"}[x])
-        if sim_step == 1:
-            st.markdown('<div class="sim-card"><div class="sim-title">P0 holds 🖨️ Printer</div><div class="sim-sub">P1 holds 📄 Scanner</div></div>', unsafe_allow_html=True)
-            st.success("Both processes currently hold one resource.")
-        elif sim_step == 2:
-            st.markdown('<div class="sim-card"><div class="sim-title">P0 → requests Scanner</div><div class="sim-sub">P1 → requests Printer</div></div>', unsafe_allow_html=True)
-            st.warning("Each process is waiting for the resource held by the other.")
-        else:
-            st.markdown('<div class="sim-card"><div class="sim-title">P0 ⟲ P1</div><div class="sim-sub">Circular wait: neither process can continue.</div></div>', unsafe_allow_html=True)
-            st.error("DEADLOCK under the assumption of one instance of each resource and no preemption.")
-        st.markdown("**How to recover:** terminate one process and release its resources.")
-        if st.button("Simulate recovery", use_container_width=True):
-            st.session_state.recovered = True
-        if st.session_state.get("recovered", False):
-            st.success("P1 terminated → Scanner released → P0 can continue. Circular wait is broken.")
+        st.subheader("🔁 Live Deadlock Simulation (Replay Mode)")
+        st.caption("Visual animated walkthrough simulating Coffman conditions, circular wait deadlock formation, and recovery in continuous replay mode.")
+        render_deadlock_replay_animation()
     st.divider()
     st.subheader("Assignment coverage")
     st.markdown("""
